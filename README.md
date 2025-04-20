@@ -1,4 +1,4 @@
-# OpenStreetMap POI Collector
+# POI and Hazard Risks Collector
 
 A Python script to collect Points of Interest (POI) data from OpenStreetMap and assess hazard risks using INARISK data.
 
@@ -6,17 +6,22 @@ A Python script to collect Points of Interest (POI) data from OpenStreetMap and 
 
 - Collect various types of POIs:
   - Buildings
-  - Villages
+  - Village boundaries (administrative areas)
   - Shelters
-  - Road networks
+  - Road networks with risk-based coloring
 - Assess hazard risks from INARISK:
   - Earthquake
   - Flood
   - Volcanic
   - Landslide
+- Interactive visualization with risk level indicators
+- Village data aggregation by administrative boundaries
+- Parallel processing support for faster execution
+- Batch processing for INARISK API requests
 - Specify search area by coordinates and radius
 - Save results in GeoJSON format
 - Organize outputs by POI type
+- Logging for debugging and monitoring
 
 ## Installation
 Create a virtual environment:
@@ -62,15 +67,25 @@ python main.py --lat 37.7749 --lon -122.4194 --radius 10 --poi-types buildings v
 ### Output
 The program creates a directory containing separate GeoJSON files for each POI type. Each feature in the GeoJSON includes risk assessment values (if enabled):
 - buildings.geojson
-- roads.geojson
+- roads.geojson (colored by risk level)
 - shelter.geojson
-- villages.geojson
+- villages.geojson (administrative boundaries)
+- villages_aggregated.geojson (merged village areas)
 
 Risk values range from 0 (lowest) to 1 (highest) for each hazard type:
 - earthquake_risk
 - flood_risk
 - volcanic_risk
 - landslide_risk
+
+### Visualization
+The program generates interactive HTML maps for each hazard type:
+- Color gradients from blue (low risk) to red (high risk)
+- Road networks colored by risk level
+- Village boundaries with aggregated risk values
+- Clickable features with risk information
+- Layer toggles for different POI types
+- Risk level legend
 
 ### Performance Notes
 - Parallel processing can significantly improve performance when:

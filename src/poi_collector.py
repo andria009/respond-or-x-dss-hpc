@@ -4,6 +4,10 @@ from typing import List, Tuple
 import os
 from multiprocessing import Pool, cpu_count
 from .inarisk_client import INARISKClient
+from .visualizer import POIVisualizer
+import time
+from datetime import datetime
+from .village_aggregator import VillageAggregator
 
 class POICollector:
     def __init__(self, output_dir: str = "pois_output", batch_size: int = 20, 
@@ -28,7 +32,16 @@ class POICollector:
         if poi_type == "buildings":
             tags["building"] = True
         elif poi_type == "villages":
-            tags["place"] = "village"
+            # Fetch village boundaries
+            tags = {
+                "boundary": "administrative",
+                "admin_level": "9",  # Level for villages in Indonesia
+                "place": ["village", "suburb", "neighbourhood"]
+            }
+            pois = ox.features_from_point((latitude, longitude), tags, radius_meters)
+            # Filter for polygon geometries only
+            pois = pois[pois.geometry.type.isin(['Polygon', 'MultiPolygon'])]
+            return poi_type, pois
         elif poi_type == "shelter":
             tags["amenity"] = "shelter"
         elif poi_type == "roads":
@@ -39,7 +52,10 @@ class POICollector:
 
     def collect_pois(self, latitude: float, longitude: float, radius: float, 
                     poi_types: List[str], assess_risks: bool = True) -> dict:
-        """Collect POIs and assess hazard risks."""
+        if self.debug:
+            start_time = time.time()
+            print(f"\nExecution started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            
         radius_meters = radius * 1000
         results = {}
 
@@ -57,10 +73,17 @@ class POICollector:
                 if not pois.empty:
                     if assess_risks:
                         pois = self._assess_hazard_risks(pois)
-                    output_file = os.path.join(self.output_dir, f"{poi_type}.geojson")
-                    pois.to_file(output_file, driver="GeoJSON")
-                    print(f"Saved {len(pois)} {poi_type} to {output_file}")
-                    results[poi_type] = pois
+                        
+                        output_file = os.path.join(self.output_dir, f"{poi_type}.geojson")
+                        pois.to_file(output_file, driver="GeoJSON")
+                        print(f"Saved {len(pois)} {poi_type} to {output_file}")
+                        
+                        # Aggregate villages if this is village data
+                        if poi_type == "villages":
+                            aggregator = VillageAggregator()
+                            pois = aggregator.aggregate_villages(output_file)
+                        
+                        results[poi_type] = pois
         else:
             # Original sequential processing
             for poi_type in poi_types:
@@ -72,6 +95,17 @@ class POICollector:
                     pois.to_file(output_file, driver="GeoJSON")
                     print(f"Saved {len(pois)} {poi_type} to {output_file}")
                     results[poi_type] = pois
+
+        # Create visualizations after collecting all POIs
+        if assess_risks:
+            visualizer = POIVisualizer(self.output_dir)
+            visualizer.create_risk_maps(results, latitude, longitude)
+
+        if self.debug:
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"\nExecution completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"Total execution time: {execution_time:.2f} seconds")
 
         return results
 

@@ -1,3 +1,6 @@
 osmnx==3.4.2
 pandas==2.2.3
 geopandas==1.0.1
+folium==0.19.5
+branca==0.8.1
+matplotlib==3.10.1
