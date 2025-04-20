@@ -1,6 +1,8 @@
-# POI and Hazard Risks Collector
+# RESPOND-OR-x-DSS-HPC (POIs + Hazard Risk Collector and Evacuation Route Planning)
 
-A Python script to collect Points of Interest (POI) data from OpenStreetMap, assess hazard risks using INARISK data, and find optimal evacuation routes from Villages to Shelters.
+(c) 2025, Andria Arisal
+
+Python scripts to collect Points of Interest (POI) data from OpenStreetMap, assess hazard risks using INARISK data, and find optimal evacuation routes from Villages to Shelters.
 
 ## Features
 
