@@ -5,10 +5,7 @@ import numpy as np
 
 class VillageAggregator:
     @staticmethod
-    def aggregate_villages(geojson_path: str) -> gpd.GeoDataFrame:
-        # Read the GeoJSON file
-        gdf = gpd.read_file(geojson_path)
-        
+    def aggregate_villages(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         # Group by village name
         village_groups = gdf.groupby('is_in:village')
         
@@ -42,9 +39,5 @@ class VillageAggregator:
         # Create new GeoDataFrame with CRS
         aggregated_gdf = gpd.GeoDataFrame.from_features(aggregated_data)
         aggregated_gdf.set_crs(epsg=4326, inplace=True)  # WGS 84 coordinate system
-        
-        # Save aggregated data
-        output_path = geojson_path.replace('.geojson', '_aggregated.geojson')
-        aggregated_gdf.to_file(output_path, driver='GeoJSON')
         
         return aggregated_gdf

@@ -74,14 +74,14 @@ class POICollector:
                     if assess_risks:
                         pois = self._assess_hazard_risks(pois)
                         
+                        # Aggregate villages before saving if this is village data
+                        if poi_type == "villages":
+                            aggregator = VillageAggregator()
+                            pois = aggregator.aggregate_villages(pois)
+                        
                         output_file = os.path.join(self.output_dir, f"{poi_type}.geojson")
                         pois.to_file(output_file, driver="GeoJSON")
                         print(f"Saved {len(pois)} {poi_type} to {output_file}")
-                        
-                        # Aggregate villages if this is village data
-                        if poi_type == "villages":
-                            aggregator = VillageAggregator()
-                            pois = aggregator.aggregate_villages(output_file)
                         
                         results[poi_type] = pois
         else:
