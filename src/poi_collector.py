@@ -43,7 +43,77 @@ class POICollector:
             pois = pois[pois.geometry.type.isin(['Polygon', 'MultiPolygon'])]
             return poi_type, pois
         elif poi_type == "shelter":
-            tags["amenity"] = "shelter"
+            pois_list = []
+            try:
+                # Emergency and shelter tags
+                emergency_tags = {"emergency": ["assembly_point", "shelter"]}
+                pois_subset = ox.features_from_point((latitude, longitude), emergency_tags, radius_meters)
+                if not pois_subset.empty:
+                    pois_subset = pois_subset[pois_subset.geometry.type == 'Polygon']
+                    if not pois_subset.empty:
+                        pois_list.append(pois_subset)
+            except Exception:
+                pass
+
+            try:
+                # Community centers
+                amenity_tags = {"amenity": ["shelter", "community_centre"]}
+                pois_subset = ox.features_from_point((latitude, longitude), amenity_tags, radius_meters)
+                if not pois_subset.empty:
+                    pois_subset = pois_subset[pois_subset.geometry.type == 'Polygon']
+                    if not pois_subset.empty:
+                        pois_list.append(pois_subset)
+            except Exception:
+                pass
+
+            try:
+                # Public buildings
+                building_tags = {"building": ["public", "community_centre"]}
+                pois_subset = ox.features_from_point((latitude, longitude), building_tags, radius_meters)
+                if not pois_subset.empty:
+                    pois_subset = pois_subset[pois_subset.geometry.type == 'Polygon']
+                    if not pois_subset.empty:
+                        pois_list.append(pois_subset)
+            except Exception:
+                pass
+
+            try:
+                # Hospitals and healthcare facilities
+                healthcare_tags = {
+                    "amenity": ["hospital", "clinic"],
+                    "building": ["hospital", "clinic"]
+                }
+                for key, values in healthcare_tags.items():
+                    for value in values:
+                        pois_subset = ox.features_from_point((latitude, longitude), {key: value}, radius_meters)
+                        if not pois_subset.empty:
+                            pois_subset = pois_subset[pois_subset.geometry.type == 'Polygon']
+                            if not pois_subset.empty:
+                                pois_list.append(pois_subset)
+            except Exception:
+                pass
+
+            try:
+                # Places of worship
+                worship_tags = {
+                    "amenity": ["place_of_worship"],
+                    "building": ["mosque", "church", "temple", "religious"]
+                }
+                for key, values in worship_tags.items():
+                    for value in values:
+                        pois_subset = ox.features_from_point((latitude, longitude), {key: value}, radius_meters)
+                        if not pois_subset.empty:
+                            pois_subset = pois_subset[pois_subset.geometry.type == 'Polygon']
+                            if not pois_subset.empty:
+                                pois_list.append(pois_subset)
+            except Exception:
+                pass
+            
+            # Combine all results and remove duplicates
+            if pois_list:
+                pois = gpd.pd.concat(pois_list).drop_duplicates(subset='geometry')
+                return poi_type, pois
+            return poi_type, gpd.GeoDataFrame()
         elif poi_type == "roads":
             return poi_type, self._collect_roads(latitude, longitude, radius_meters)
         

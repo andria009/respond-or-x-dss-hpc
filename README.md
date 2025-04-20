@@ -4,24 +4,41 @@ A Python script to collect Points of Interest (POI) data from OpenStreetMap and 
 
 ## Features
 
-- Collect various types of POIs:
+- Collects various POI types from OpenStreetMap:
   - Buildings
-  - Village boundaries (administrative areas)
-  - Shelters
-  - Road networks with risk-based coloring
-- Assess hazard risks from INARISK:
+  - Villages (administrative boundaries)
+  - Shelters (including):
+    - Emergency assembly points and shelters
+    - Community centers
+    - Public buildings
+    - Hospitals and healthcare facilities
+    - Places of worship
+  - Roads
+- Assess multiple hazard risks from INARISK:
   - Earthquake
   - Flood
   - Volcanic
   - Landslide
-- Interactive visualization with risk level indicators
-- Village data aggregation by administrative boundaries
-- Parallel processing support for faster execution
+- Supports parallel processing for faster data collection
+- Generates GeoJSON outputs with risk assessments
+- Creates visualization maps for collected POIs and their risks
 - Batch processing for INARISK API requests
 - Specify search area by coordinates and radius
 - Save results in GeoJSON format
 - Organize outputs by POI type
 - Logging for debugging and monitoring
+
+## Requirements
+
+- Python 3.8+
+- Required packages:
+  - osmnx
+  - geopandas
+  - pandas
+  - requests
+  - matplotlib
+  - shapely
+  - folium
 
 ## Installation
 Create a virtual environment:
@@ -65,12 +82,13 @@ python main.py --lat 37.7749 --lon -122.4194 --radius 10 --poi-types buildings v
 python main.py --lat 37.7749 --lon -122.4194 --radius 10 --poi-types buildings villages --hazards earthquake flood --batch-size 10 --debug --output-dir my_pois
 ```
 ### Output
-The program creates a directory containing separate GeoJSON files for each POI type. Each feature in the GeoJSON includes risk assessment values (if enabled):
-- buildings.geojson
-- roads.geojson (colored by risk level)
-- shelter.geojson
-- villages.geojson (administrative boundaries)
-- villages_aggregated.geojson (merged village areas)
+The script generates:
+- GeoJSON files for each POI type with risk assessments
+- Risk visualization maps (if enabled):
+  - buildings.geojson
+  - roads.geojson
+  - shelter.geojson
+  - villages.geojson (administrative boundaries)
 
 Risk values range from 0 (lowest) to 1 (highest) for each hazard type:
 - earthquake_risk
@@ -94,3 +112,6 @@ The program generates interactive HTML maps for each hazard type:
   - Assessing multiple hazard types
 - The optimal number of workers depends on your CPU cores and system resources
 - Debug mode provides detailed progress but may slow down execution
+
+## License
+MIT License
