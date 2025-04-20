@@ -23,6 +23,10 @@ def main():
                       help='Hazard types to assess (default: all hazards)')
     parser.add_argument('--debug', action='store_true',
                       help='Enable debug output for API requests')
+    parser.add_argument('--parallel', action='store_true',
+                      help='Enable parallel processing')
+    parser.add_argument('--workers', type=int, default=4,
+                      help='Number of worker processes for parallel processing (default: 4)')
 
     args = parser.parse_args()
     
@@ -30,7 +34,9 @@ def main():
         output_dir=args.output_dir,
         batch_size=args.batch_size,
         debug=args.debug,
-        hazard_types=args.hazards  # Add hazard types parameter
+        hazard_types=args.hazards,
+        parallel=args.parallel,
+        workers=args.workers
     )
     pois = collector.collect_pois(
         args.lat, 
