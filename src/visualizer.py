@@ -15,7 +15,7 @@ class POIVisualizer:
         )
         # Special style for roads
         self.road_style = {
-            'weight': 3,
+            'weight': 2,
             'opacity': 1
         }
 

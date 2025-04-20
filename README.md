@@ -37,12 +37,15 @@ A Python script to collect Points of Interest (POI) data from OpenStreetMap, ass
   - Combined hazard risks
   - Road network accessibility
 - Generates multiple route options per village
+- Supports parallel processing for route calculation
+- Individual route processing for better performance
+- Configurable number of worker processes for route calculation
 - Exports routes in GeoJSON format
 - Interactive visualization of evacuation routes
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.12+
 - Required packages:
   - osmnx
   - geopandas
@@ -68,8 +71,8 @@ pip install -r requirements.txt
 Run the script with the following arguments:
 ```bash
 python main.py --lat LATITUDE --lon LONGITUDE --radius RADIUS_KM --poi-types TYPE1 [TYPE2 ...] \
-  --hazards TYPE1 [TYPE2...] --batch-size BATCH_SIZE --parallel --workers WORKERS \
-  --debug --output-dir OUTPUT_DIR
+  --hazards TYPE1 [TYPE2...] [--batch-size BATCH_SIZE] [--parallel --workers WORKERS] \
+  [--debug] --output-dir OUTPUT_DIR
 ```
 #### Arguments
 - `--lat` : Latitude of the center point
@@ -139,13 +142,38 @@ The program generates interactive HTML maps for each hazard type:
 
 After collecting POIs and risk data, run the route planning script:
 ```bash
-python routes_builder.py --input-dir INPUT_DIR --output-dir OUTPUT_DIR [--max-routes MAX_ROUTES] [--debug]
+python routes_builder.py --input-dir INPUT_DIR [--debug] \
+  [--max-routes MAX_ROUTES] \
+  [--parallel --workers WORKERS] [--debug] \
+  --output-dir OUTPUT_DIR 
 ```
 #### Arguments
 Route Planning Arguments:
 - `--input-dir` : Directory containing POI files (roads, villages, shelters)
 - `--max-routes` : Maximum number of alternative routes per village (default: 3)
+- `--parallel` : Enable parallel processing for faster execution
+- `--workers` : Number of worker processes for parallel processing (default: 4)
+- `--debug` : Enable detailed output process
 - `--output-dir` : Output directory for routes and visualizationfiles 
+
+#### Example
+1. Basic sequential processing
+```bash
+python routes_builder.py --input-dir my_pois \
+  --output-dir my_pois_routes
+```
+2. Parallel processing with 4 workers
+```bash
+python routes_builder.py --input-dir my_pois \
+  --parallel --workers 4 \
+  --output-dir my_pois_routes
+```
+3. Debug mode
+```bash
+python routes_builder.py --input-dir my_pois \
+  --max-routes 5 --parallel --workers 4 --debug \
+  --output-dir my_pois_routes
+```
 
 #### Output
 The script generates:
@@ -180,6 +208,20 @@ The evacuation route visualization includes:
   - Worst road type quality
 - Expandable layer control panel
 - Risk level legend
+
+#### Performance Notes
+- Parallel processing improves performance when:
+  - Processing large number of villages
+  - Finding routes to multiple shelters
+  - Calculating multiple alternative routes
+- Route finding can be CPU-intensive, especially for:
+  - Complex road networks
+  - Large search areas
+  - Multiple alternative paths
+- Memory usage increases with:
+  - Number of parallel workers
+  - Size of road network
+  - Number of villages and shelters
 
 ## License
 MIT License

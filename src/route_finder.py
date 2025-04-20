@@ -293,8 +293,8 @@ class RouteFinder:
                 },
                 style_function=lambda x: {
                     'color': route_color,
-                    'weight': 4,
-                    'opacity': 0.8
+                    'weight': 2,
+                    'opacity': 1
                 },
                 tooltip=folium.GeoJsonTooltip(
                     fields=['village', 'shelter', 'distance', 'risk', 'road_quality'],
@@ -313,3 +313,49 @@ class RouteFinder:
         output_file = os.path.join(output_dir, 'evacuation_routes_map.html')
         m.save(output_file)
         print(f"\nCreated evacuation routes visualization at: {output_file}")
+    
+    def find_single_route(self, village_node, shelter_node, village_name, shelter_name):
+        """Find a single route between a village and shelter node"""
+        try:
+            # Find shortest path
+            path = nx.shortest_path(self.G, village_node, shelter_node, weight='weight')
+            
+            # Calculate route metrics
+            total_distance = 0
+            total_risk = 0
+            worst_road = 1.0
+            
+            for i in range(len(path)-1):
+                edge = self.G[path[i]][path[i+1]]
+                total_distance += edge['distance']
+                total_risk += edge['risk_score']
+                
+                # Track worst road type in route
+                highway_type = edge['highway_type']
+                if isinstance(highway_type, list):
+                    highway_type = highway_type[0]
+                road_quality = {
+                    'primary': 1.0,
+                    'secondary': 0.9,
+                    'tertiary': 0.8,
+                    'residential': 0.7,
+                    'service': 0.6,
+                    'living_street': 0.5,
+                    'footway': 0.4,
+                    'path': 0.3
+                }.get(highway_type, 0.5)
+                worst_road = min(worst_road, road_quality)
+            
+            avg_risk = total_risk / len(path)
+            
+            return {
+                'village_name': village_name,
+                'shelter_name': shelter_name,
+                'total_distance': total_distance,
+                'average_risk': avg_risk,
+                'worst_road_type': worst_road,
+                'path': path
+            }
+            
+        except nx.NetworkXNoPath:
+            return None
