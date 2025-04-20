@@ -1,43 +1,46 @@
 import geopandas as gpd
 import pandas as pd
-from shapely.ops import unary_union
-import numpy as np
 
 class VillageAggregator:
-    @staticmethod
-    def aggregate_villages(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-        # Group by village name
-        village_groups = gdf.groupby('is_in:village')
-        
-        aggregated_data = []
-        for village_name, group in village_groups:
-            if pd.isna(village_name):
-                continue
+    def aggregate_villages(self, gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+        """Aggregate village data based on available village identifiers"""
+        try:
+            # Try different possible village identifier columns
+            if 'name' in gdf.columns:
+                village_groups = gdf.groupby('name')
+            elif 'is_in:village' in gdf.columns:
+                village_groups = gdf.groupby('is_in:village')
+            elif 'addr:village' in gdf.columns:
+                village_groups = gdf.groupby('addr:village')
+            else:
+                # If no village identifier found, return as-is
+                return gdf
+
+            # Aggregate data
+            aggregated = []
+            for name, group in village_groups:
+                # Calculate average risks
+                avg_earthquake = group['earthquake_risk'].mean()
+                avg_flood = group['flood_risk'].mean()
                 
-            # Merge geometries
-            merged_geometry = unary_union(group.geometry)
+                # Merge geometries if multiple polygons
+                if len(group) > 1:
+                    merged_geom = group.geometry.unary_union
+                else:
+                    merged_geom = group.geometry.iloc[0]
+                
+                # Create aggregated village entry
+                aggregated.append({
+                    'name': name,
+                    'geometry': merged_geom,
+                    'earthquake_risk': avg_earthquake,
+                    'flood_risk': avg_flood,
+                    'area': merged_geom.area,
+                    'population': group.get('population', 0).sum()
+                })
             
-            # Calculate average risk values
-            avg_earthquake_risk = group['earthquake_risk'].mean()
-            avg_flood_risk = group['flood_risk'].mean()
+            return gpd.GeoDataFrame(aggregated, crs=gdf.crs)
             
-            # Get common attributes
-            common_attrs = {
-                'name': village_name,
-                'is_in:municipality': group['is_in:municipality'].iloc[0],
-                'is_in:province': group['is_in:province'].iloc[0],
-                'is_in:town': group['is_in:town'].iloc[0],
-                'earthquake_risk': avg_earthquake_risk,
-                'flood_risk': avg_flood_risk
-            }
-            
-            aggregated_data.append({
-                'geometry': merged_geometry,
-                'properties': common_attrs
-            })
-        
-        # Create new GeoDataFrame with CRS
-        aggregated_gdf = gpd.GeoDataFrame.from_features(aggregated_data)
-        aggregated_gdf.set_crs(epsg=4326, inplace=True)  # WGS 84 coordinate system
-        
-        return aggregated_gdf
+        except Exception as e:
+            print(f"Warning: Village aggregation failed - {str(e)}")
+            return gdf
