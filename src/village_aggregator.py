@@ -16,12 +16,22 @@ class VillageAggregator:
                 # If no village identifier found, return as-is
                 return gdf
 
+            # Define possible risk columns
+            risk_columns = [
+                'earthquake_risk',
+                'flood_risk',
+                'landslide_risk',
+                'volcanic_risk'
+            ]
+
             # Aggregate data
             aggregated = []
             for name, group in village_groups:
-                # Calculate average risks
-                avg_earthquake = group['earthquake_risk'].mean()
-                avg_flood = group['flood_risk'].mean()
+                # Calculate average risks for available risk types
+                risk_values = {}
+                for risk_col in risk_columns:
+                    if risk_col in group.columns:
+                        risk_values[risk_col] = group[risk_col].mean()
                 
                 # Merge geometries if multiple polygons
                 if len(group) > 1:
@@ -29,15 +39,18 @@ class VillageAggregator:
                 else:
                     merged_geom = group.geometry.iloc[0]
                 
-                # Create aggregated village entry
-                aggregated.append({
+                # Create base village entry
+                village_entry = {
                     'name': name,
                     'geometry': merged_geom,
-                    'earthquake_risk': avg_earthquake,
-                    'flood_risk': avg_flood,
                     'area': merged_geom.area,
-                    'population': group.get('population', 0).sum()
-                })
+                    'population': group['population'].sum() if 'population' in group.columns else 0
+                }
+                
+                # Add available risk values
+                village_entry.update(risk_values)
+                
+                aggregated.append(village_entry)
             
             return gpd.GeoDataFrame(aggregated, crs=gdf.crs)
             

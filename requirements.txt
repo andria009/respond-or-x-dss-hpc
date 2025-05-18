@@ -7,3 +7,4 @@ matplotlib==3.10.1
 networkx==3.4.2
 shapely==2.1.0
 numpy==2.2.4
+tqdm==4.67.1

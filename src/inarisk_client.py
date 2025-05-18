@@ -2,6 +2,8 @@ import math
 import json
 import time
 import requests
+from datetime import datetime
+from tqdm import tqdm
 
 class INARISKClient:
     """Client for INARISK API to get hazard risk data."""
@@ -25,6 +27,10 @@ class INARISKClient:
         return x, y
     
     def get_risk_for_points(self, points, hazard_type, batch_size=20):
+        if self.debug:
+            start_time = time.time()
+            print(f"\nRisk scraping started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
         """Get risk values for multiple points."""
         if hazard_type not in self.hazard_layers:
             raise ValueError(f"Invalid hazard type. Must be one of {list(self.hazard_layers.keys())}")
@@ -37,10 +43,7 @@ class INARISKClient:
         
         all_results = []
         
-        for batch_idx, point_batch in enumerate(point_batches):
-            if self.debug:
-                print(f"\nProcessing batch {batch_idx+1}/{len(point_batches)}")
-                print(f"Points in this batch: {len(point_batch)}")
+        for point_batch in tqdm(point_batches, desc="Processing batches", disable=not self.debug):
             
             geometry = {
                 "points": point_batch,
@@ -58,8 +61,8 @@ class INARISKClient:
             }
             
             try:
-                if self.debug:
-                    print("Sending request to INARISK API...")
+                # if self.debug:
+                #     print("Sending request to INARISK API...")
                 
                 response = requests.get(url, params=params)
                 response.raise_for_status()
@@ -76,9 +79,9 @@ class INARISKClient:
                             
                         batch_results.append(risk_value)
                         
-                        if self.debug:
-                            orig_point = points[batch_idx * batch_size + i]
-                            print(f"Point {i+1}: ({orig_point[0]:.6f}, {orig_point[1]:.6f}) -> Risk: {risk_value}")
+                        # if self.debug:
+                        #     orig_point = points[batch_idx * batch_size + i]
+                        #     print(f"Point {i+1}: ({orig_point[0]:.6f}, {orig_point[1]:.6f}) -> Risk: {risk_value}")
                     
                     all_results.extend(batch_results)
                 else:
@@ -92,5 +95,11 @@ class INARISKClient:
                 all_results.extend([0.0] * len(point_batch))
             
             time.sleep(1)  # Rate limiting
-            
+        
+        if self.debug:
+            end_time = time.time()
+            execution_time = end_time - start_time
+            print(f"\nRisk scraping completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"Total risk scraping time: {execution_time:.2f} seconds")
+
         return all_results
