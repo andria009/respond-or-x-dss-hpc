@@ -62,7 +62,7 @@ Python scripts to collect Points of Interest (POI) data from OpenStreetMap, asse
 Create a virtual environment:
 ```bash
 $ python -m venv venv
-$ venv\Scripts\activate
+$ sh venv/Scripts/activate
 $ pip install -r requirements.txt
 ```
 
