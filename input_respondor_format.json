@@ -1,0 +1,17 @@
+{
+    "name": "jakarta_test",
+    "output_dir": "output/jakarta_test",
+    "poi_file": "../respondor-main/data/jakarta/jakarta_locations.csv",
+    "network_pycgr_file": "../respondor-main/data/jakarta/jakarta.pycgrc",
+    "network_json_file": "../respondor-main/data/jakarta/jakarta_contracted.json",
+    "risk_category": "INDEKS_BAHAYA_GEMPABUMI",
+    "assess_risks": true,
+    "hazard_types": ["earthquake", "flood", "volcanic", "landslide"],
+    "batch_size": 20,
+    "parallel": true,
+    "workers": 4,
+    "debug": true,
+    "generate_routes": true,
+    "max_routes": 3,
+    "use_existing_network": true
+}
