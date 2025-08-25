@@ -8,7 +8,7 @@ The respond-or-x-dss-hpc system has been modified to accept CSV-based POI input 
 
 ## New Components
 
-### 1. Main Script: `main_respondor_input.py`
+### 1. Main Script: `main_respondor.py`
 - Accepts JSON configuration files (similar to respondor-main's input.json)
 - Processes CSV POI files with format: `name,category,lat,lng,[additional_columns]`
 - Supports both standalone operation and integration with existing network data
@@ -80,13 +80,13 @@ pip install -r requirements.txt
 
 ### 2. Basic Usage (CSV + OSM)
 ```bash
-python main_respondor_input.py config.json
+python main_respondor.py config.json
 ```
 
 ### 3. Advanced Usage (with existing network)
 ```bash
 # Set use_existing_network: true in config.json
-python main_respondor_input.py config_with_network.json
+python main_respondor.py config_with_network.json
 ```
 
 ## Output Files
@@ -170,7 +170,7 @@ cat > test_config.json << EOF
 EOF
 
 # Run test
-python main_respondor_input.py test_config.json
+python main_respondor.py test_config.json
 ```
 
 ## Integration Benefits

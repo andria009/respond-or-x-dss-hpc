@@ -76,7 +76,7 @@ def validate_poi_csv(poi_file):
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: python main_respondor_input.py <input.json>")
+        print("Usage: python main_respondor.py <input.json>")
         print("\nExpected JSON format:")
         print("""{
     "name": "project_name",

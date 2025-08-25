@@ -44,6 +44,15 @@ Python scripts to collect Points of Interest (POI) data from OpenStreetMap, asse
 - Exports routes in GeoJSON format
 - Interactive visualization of evacuation routes
 
+### respondor-main Compatibility
+- Accepts JSON configuration files (compatible with respondor-main format)
+- Processes CSV POI files with format: `name,category,lat,lng`
+- Generates dual output formats:
+  - Original GeoJSON files for visualization
+  - CSV/PYCGRC files compatible with respondor-main
+- Supports existing network integration (PYCGR format)
+- Maintains full backward compatibility
+
 ## Requirements
 
 - Python 3.12+
@@ -223,6 +232,41 @@ The evacuation route visualization includes:
   - Number of parallel workers
   - Size of road network
   - Number of villages and shelters
+
+### respondor-main Compatible Usage
+
+For processing respondor-main format inputs (JSON config + CSV POIs):
+
+```bash
+# Activate shared virtual environment
+source ../respondor_env/bin/activate
+
+# Run with JSON configuration
+python main_respondor.py config.json
+
+# Or use the helper script
+./run_with_respondor_input.sh config.json
+```
+
+#### JSON Configuration Format
+```json
+{
+    "name": "project_name",
+    "output_dir": "output/directory",
+    "poi_file": "path/to/locations.csv",
+    "assess_risks": true,
+    "generate_routes": true,
+    "output_respondor_format": true
+}
+```
+
+#### CSV POI Format
+```csv
+ANCOL,village,-6.125215,106.8362474
+SHELTER_1,shelter,-6.120000,106.830000
+```
+
+See `README_INTEGRATION.md` for detailed documentation on respondor-main compatibility features.
 
 ## License
 MIT License

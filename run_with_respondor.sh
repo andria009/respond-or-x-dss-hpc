@@ -1,6 +1,7 @@
 #!/bin/bash
 # Script to run respond-or-x-dss-hpc with respondor-main input format
-# Usage: ./run_with_respondor_input.sh <input_config.json>
+# Usage: ./run_with_respondor.sh <input_config.json>
+# Runs main_respondor.py with the specified configuration file
 
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <input_config.json>"
@@ -41,7 +42,7 @@ echo "Running respond-or-x-dss-hpc with respondor-main input format..."
 echo "Config file: $CONFIG_FILE"
 echo ""
 
-python main_respondor_input.py "$CONFIG_FILE"
+python main_respondor.py "$CONFIG_FILE"
 
 echo ""
 echo "Processing complete!"

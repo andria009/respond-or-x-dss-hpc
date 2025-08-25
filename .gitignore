@@ -29,7 +29,8 @@ env.bak/
 venv.bak/
 respondor_env/
 
-# Output directories and data
+# Input/Output directories and data
+input/
 output/
 cache/
 *.geojson
